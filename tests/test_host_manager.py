@@ -46,7 +46,9 @@ def test_getattr(host_pattern, num_hosts, hosts):
 
 @pytest.mark.parametrize("host_slice, num_hosts", POSITIVE_HOST_SLICES)
 def test_slice(host_slice, num_hosts, hosts):
-    assert len(hosts[host_slice]) == num_hosts, "%s != %s for %s" % (len(hosts[host_slice]), num_hosts, host_slice)
+    assert (
+        len(hosts[host_slice]) == num_hosts
+    ), f"{len(hosts[host_slice])} != {num_hosts} for {host_slice}"
 
 
 @pytest.mark.parametrize("host_slice", NEGATIVE_HOST_SLICES)

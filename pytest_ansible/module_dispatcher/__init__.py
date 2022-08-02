@@ -33,9 +33,8 @@ class BaseModuleDispatcher(object):
             # TODO: should we just raise an AttributeError, or a more
             # raise AttributeError("'{0}' object has no attribute '{1}'".format(self.__class__.__name__, name))
             raise AnsibleModuleError("The module {0} was not found in configured module paths.".format(name))
-        else:
-            self.options['module_name'] = name
-            return self._run
+        self.options['module_name'] = name
+        return self._run
 
     def check_required_kwargs(self, **kwargs):
         """Raise a TypeError if any required kwargs are missing."""

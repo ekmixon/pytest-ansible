@@ -34,7 +34,7 @@ class ResultAccumulator(CallbackBase):
 
     def v2_runner_on_failed(self, result, *args, **kwargs):
         result2 = dict(failed=True)
-        result2.update(result._result)
+        result2 |= result._result
         self.contacted[result._host.get_name()] = result2
 
     def v2_runner_on_ok(self, result):
@@ -71,7 +71,7 @@ class ModuleDispatcherV28(ModuleDispatcherV2):
         """Execute an ansible adhoc command returning the result in a AdhocResult object."""
         # Assemble module argument string
         if module_args:
-            complex_args.update(dict(_raw_params=' '.join(module_args)))
+            complex_args |= dict(_raw_params=' '.join(module_args))
 
         # Assert hosts matching the provided pattern exist
         hosts = self.options['inventory_manager'].list_hosts()

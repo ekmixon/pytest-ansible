@@ -55,27 +55,28 @@ NEGATIVE_HOST_SLICES = [
 
 def pytest_runtest_setup(item):
     # Conditionally skip tests that are pinned to a specific ansible version
-    if isinstance(item, pytest.Function):
-        # conditionally skip
-        if item.get_closest_marker('requires_ansible_v1') and not has_ansible_v1:
-            pytest.skip("requires < ansible-2.*")
-        if item.get_closest_marker('requires_ansible_v2') and has_ansible_v1:
-            pytest.skip("requires >= ansible-2.*")
-        if item.get_closest_marker('requires_ansible_v24') and not has_ansible_v24:
-            pytest.skip("requires >= ansible-2.4.*")
-        if item.get_closest_marker('requires_ansible_v28') and not has_ansible_v24:
-            pytest.skip("requires >= ansible-2.8.*")
+    if not isinstance(item, pytest.Function):
+        return
+    # conditionally skip
+    if item.get_closest_marker('requires_ansible_v1') and not has_ansible_v1:
+        pytest.skip("requires < ansible-2.*")
+    if item.get_closest_marker('requires_ansible_v2') and has_ansible_v1:
+        pytest.skip("requires >= ansible-2.*")
+    if item.get_closest_marker('requires_ansible_v24') and not has_ansible_v24:
+        pytest.skip("requires >= ansible-2.4.*")
+    if item.get_closest_marker('requires_ansible_v28') and not has_ansible_v24:
+        pytest.skip("requires >= ansible-2.8.*")
 
-        # conditionally xfail
-        mark = item.get_closest_marker('ansible_v1_xfail')
-        if mark and has_ansible_v1:
-            item.add_marker(pytest.mark.xfail(reason="expected failure on < ansible-2.*",
-                                              raises=mark.kwargs.get('raises')))
+    # conditionally xfail
+    mark = item.get_closest_marker('ansible_v1_xfail')
+    if mark and has_ansible_v1:
+        item.add_marker(pytest.mark.xfail(reason="expected failure on < ansible-2.*",
+                                          raises=mark.kwargs.get('raises')))
 
-        mark = item.get_closest_marker('ansible_v2_xfail')
-        if mark and not has_ansible_v1:
-            item.add_marker(pytest.xfail(reason="expected failure on >= ansible-2.*",
-                                         raises=mark.kwargs.get('raises')))
+    mark = item.get_closest_marker('ansible_v2_xfail')
+    if mark and not has_ansible_v1:
+        item.add_marker(pytest.xfail(reason="expected failure on >= ansible-2.*",
+                                     raises=mark.kwargs.get('raises')))
 
 
 class PyTestOption(object):
@@ -108,10 +109,7 @@ class PyTestOption(object):
 
     @property
     def args(self):
-        args = list()
-        args.append('--tb')
-        args.append('native')
-        return args
+        return ['--tb', 'native']
 
 
 @pytest.fixture(autouse=True)

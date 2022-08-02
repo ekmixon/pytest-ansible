@@ -159,7 +159,7 @@ class PyTestAnsiblePlugin:
 
     def pytest_report_header(self, config, startdir):
         """Return the version of ansible."""
-        return 'ansible: %s' % ansible.__version__
+        return f'ansible: {ansible.__version__}'
 
     def pytest_collection_modifyitems(self, session, config, items):
         """Validate --ansible-* parameters."""
@@ -168,7 +168,9 @@ class PyTestAnsiblePlugin:
         for item in items:
             if not hasattr(item, 'fixturenames'):
                 continue
-            if any([fixture.startswith('ansible_') for fixture in item.fixturenames]):
+            if any(
+                fixture.startswith('ansible_') for fixture in item.fixturenames
+            ):
                 # TODO - ignore if they are using a marker
                 # marker = item.get_marker('ansible')
                 # if marker and 'inventory' in marker.kwargs:
@@ -185,7 +187,7 @@ class PyTestAnsiblePlugin:
                         'ansible_module_path', 'ansible_become', 'ansible_become_method', 'ansible_become_user',
                         'ansible_ask_become_pass', 'ansible_subset']
 
-        kwargs = dict()
+        kwargs = {}
 
         # Load command-line supplied values
         for key in option_names:
@@ -201,21 +203,19 @@ class PyTestAnsiblePlugin:
 
     def _load_request_config(self, request):
         """Load ansible configuration from decorator kwargs."""
-        kwargs = dict()
+        kwargs = {}
 
-        # Override options from @pytest.mark.ansible
-        marker = request.node.get_closest_marker('ansible')
-        if marker:
+        if marker := request.node.get_closest_marker('ansible'):
             kwargs = marker.kwargs
 
         return kwargs
 
     def initialize(self, config=None, request=None, **kwargs):
         """Return an initialized Ansible Host Manager instance."""
-        ansible_cfg = dict()
+        ansible_cfg = {}
         # merge command-line configuration options
         if config is not None:
-            ansible_cfg.update(self._load_ansible_config(config))
+            ansible_cfg |= self._load_ansible_config(config)
         # merge pytest request configuration options
         if request is not None:
             ansible_cfg.update(self._load_request_config(request))

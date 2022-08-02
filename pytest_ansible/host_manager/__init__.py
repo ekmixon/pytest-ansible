@@ -51,24 +51,21 @@ class BaseHostManager(object):
             new_item += '-'
             if item.stop is not None:
                 new_item += str(item.stop)
-            item = new_item + ']'
+            item = f'{new_item}]'
 
         if item in self.__dict__:
             return self.__dict__[item]
-        else:
-            if not self.has_matching_inventory(item):
-                raise KeyError(item)
-            else:
-                self.options['host_pattern'] = item
-                return self._dispatcher(**self.options)
+        if not self.has_matching_inventory(item):
+            raise KeyError(item)
+        self.options['host_pattern'] = item
+        return self._dispatcher(**self.options)
 
     def __getattr__(self, attr):
         """Return a ModuleDispatcher instance described the provided `attr`."""
         if not self.has_matching_inventory(attr):
             raise AttributeError("type HostManager has no attribute '%s'" % attr)
-        else:
-            self.options['host_pattern'] = attr
-            return self._dispatcher(**self.options)
+        self.options['host_pattern'] = attr
+        return self._dispatcher(**self.options)
 
     def keys(self):
         return [h.name for h in self.options['inventory_manager'].list_hosts()]

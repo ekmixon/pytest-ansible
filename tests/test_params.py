@@ -62,9 +62,7 @@ def test_report_header(testdir, option):
 
     result = testdir.runpytest(*option.args)
     assert result.ret == EXIT_NOTESTSCOLLECTED
-    result.stdout.fnmatch_lines([
-        'ansible: %s' % ansible.__version__,
-    ])
+    result.stdout.fnmatch_lines([f'ansible: {ansible.__version__}'])
 
 
 def test_params_not_required_when_not_using_fixture(testdir, option):
@@ -123,9 +121,11 @@ def test_param_requires_value(testdir, required_value_parameter):
 
     result = testdir.runpytest(*[required_value_parameter])
     assert result.ret == EXIT_USAGEERROR
-    result.stderr.fnmatch_lines([
-        '*: error: argument *%s*: expected one argument' % required_value_parameter,
-    ])
+    result.stderr.fnmatch_lines(
+        [
+            f'*: error: argument *{required_value_parameter}*: expected one argument'
+        ]
+    )
 
 
 def test_params_required_with_inventory_without_host_pattern(testdir, option):
@@ -248,16 +248,6 @@ def test_params_required_without_inventory_with_host_pattern_v2(testdir, option)
     testdir.makepyfile(src)
     result = testdir.runpytest(*option.args + ['--ansible-host-pattern', 'all'])
     assert result.ret == EXIT_OK
-
-    # TODO - validate the following warning message
-    # [WARNING]: provided hosts list is empty, only localhost is available
-    if False:
-        result.stderr.fnmatch_lines(
-            [
-                "*[WARNING]: Host file not found: /etc/ansible/hosts*",
-                "*provided hosts list is empty, only localhost is available",
-            ]
-        )
 
 
 def test_param_override_with_marker(testdir):

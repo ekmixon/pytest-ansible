@@ -44,25 +44,27 @@ class CleanCommand(Command):
         self.cwd = os.getcwd()
 
     def run(self):
-        assert os.getcwd() == self.cwd, 'Must be in package root: %s' % self.cwd
+        assert os.getcwd() == self.cwd, f'Must be in package root: {self.cwd}'
 
         # List of things to remove
-        rm_list = list()
+        rm_list = []
 
         # Find any .pyc files or __pycache__ dirs
         for root, dirs, files in os.walk(self.cwd, topdown=False):
-            for fname in files:
-                if fname.endswith('.pyc') and os.path.isfile(os.path.join(root, fname)):
-                    rm_list.append(os.path.join(root, fname))
+            rm_list.extend(
+                os.path.join(root, fname)
+                for fname in files
+                if fname.endswith('.pyc')
+                and os.path.isfile(os.path.join(root, fname))
+            )
+
             if root.endswith('__pycache__') or root.endswith('.cache') or root.endswith('.ansible') or \
-               root.endswith('.pytest_cache') or \
-               root.endswith('.eggs') or root.endswith('.tox'):
+                   root.endswith('.pytest_cache') or \
+                   root.endswith('.eggs') or root.endswith('.tox'):
                 rm_list.append(root)
 
         # Find egg's
-        for egg_dir in glob.glob('*.egg') + glob.glob('*egg-info'):
-            rm_list.append(egg_dir)
-
+        rm_list.extend(iter(glob.glob('*.egg') + glob.glob('*egg-info')))
         # Zap!
         for rm in rm_list:
             if self.verbose:
@@ -70,9 +72,8 @@ class CleanCommand(Command):
             if os.path.isdir(rm):
                 if not self.dry_run:
                     shutil.rmtree(rm)
-            else:
-                if not self.dry_run:
-                    os.remove(rm)
+            elif not self.dry_run:
+                os.remove(rm)
 
 
 def long_description(*paths):
@@ -84,7 +85,7 @@ def long_description(*paths):
     try:
         import pypandoc
     except (ImportError, OSError) as e:
-        print("Unable to import pypandoc - %s" % e)
+        print(f"Unable to import pypandoc - {e}")
         return result
 
     # attempt md -> rst conversion
@@ -94,7 +95,7 @@ def long_description(*paths):
                 path, 'rst', format='markdown'
             )
     except (OSError, IOError) as e:
-        print("Failed to convert with pypandoc - %s" % e)
+        print(f"Failed to convert with pypandoc - {e}")
         return result
 
     return result
